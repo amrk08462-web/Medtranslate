@@ -3,8 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Medtranslate</title>
+    <title>Medtranslate - On-Device Medical Document Translation</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google AdSense - Replace with your AdSense publisher ID -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXX"></script>
+    
     <script>
       tailwind.config = {
         darkMode: 'class',
@@ -20,6 +24,9 @@
               'float': 'float 6s ease-in-out infinite',
               'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
               'blob': 'blob 10s infinite',
+              'shimmer': 'shimmer 2s infinite',
+              'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+              'float-3d': 'float-3d 6s ease-in-out infinite',
             },
             keyframes: {
               glow: {
@@ -39,6 +46,18 @@
                 '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
                 '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
                 '100%': { transform: 'translate(0px, 0px) scale(1)' },
+              },
+              shimmer: {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(100%)' },
+              },
+              'pulse-glow': {
+                '0%, 100%': { opacity: '1', boxShadow: '0 0 20px rgba(255,255,255,0.2)' },
+                '50%': { opacity: '0.8', boxShadow: '0 0 40px rgba(255,255,255,0.4)' },
+              },
+              'float-3d': {
+                '0%, 100%': { transform: 'translateY(0) rotateZ(0deg)' },
+                '50%': { transform: 'translateY(-15px) rotateZ(2deg)' },
               }
             }
           },
@@ -52,17 +71,92 @@
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         overflow-x: hidden;
       }
+      
       .glass-panel {
         background: rgba(255, 255, 255, 0.03);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       }
+      
+      .glass-panel:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateZ(10px);
+      }
+      
+      /* 3D Transitions */
+      button {
+        perspective: 1000px;
+      }
+      
+      button:hover {
+        transform: rotateY(5deg) scale(1.02);
+      }
+      
+      button:active {
+        transform: scale(0.98);
+      }
+      
       /* Noise texture for premium feel */
       .bg-noise {
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
       }
+      
+      /* Custom scrollbar */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+      }
+      
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+      }
+      
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+      }
+      
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+      
+      /* Mobile Responsive */
+      @media (max-width: 768px) {
+        body {
+          font-size: 14px;
+        }
+        
+        button {
+          padding: 12px 20px;
+        }
+      }
+      
+      /* Accessibility - Reduced Motion */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+      
+      /* AdSense Styling */
+      .ad-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 8px;
+        padding: 12px;
+      }
+      
+      ins.adsbygoogle {
+        display: block !important;
+      }
     </style>
+    
   <script type="importmap">
 {
   "imports": {
@@ -70,12 +164,22 @@
     "react/": "https://esm.sh/react@^19.2.4/",
     "react": "https://esm.sh/react@^19.2.4",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.39.0"
+    "@google/genai": "https://esm.sh/@google/genai@^1.39.0",
+    "@xenova/transformers": "https://esm.sh/@xenova/transformers@^2.6.0",
+    "pdfjs-dist": "https://esm.sh/pdfjs-dist@^4.0.379",
+    "docx": "https://esm.sh/docx@^8.5.0",
+    "jszip": "https://esm.sh/jszip@^3.10.1",
+    "pdf-lib": "https://esm.sh/pdf-lib@^1.17.1"
   }
 }
 </script>
 </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <p style="text-align: center; margin-top: 50px; color: #fff;">
+        JavaScript is required to use Medtranslate. Please enable JavaScript in your browser.
+      </p>
+    </noscript>
   </body>
 </html>
